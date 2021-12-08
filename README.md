@@ -50,7 +50,7 @@ fetch("//localhost:8081/test.json").then((response) => {
 - ReadableStream >= chrome 43, ie not, safari >= 10.1
 - TextDecoder >= chorme 38, ie not, safari >= 10.1
 
-### 后端写入方式
+### 后端写入方式 http2
 
 ```js
 function onRequest(req, res) {
@@ -69,4 +69,30 @@ function onRequest(req, res) {
     return;
   }
 }
+```
+
+### 后端写入方式 http1.1
+
+```js
+http.createServer(function (req, res) {
+  res.writeHead(200, {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers":
+      "Origin, X-Requested-With, Content-Type, Accept",
+  });
+  const reqPath = req.url === "/" ? "/index.html" : req.url;
+  if (reqPath == "/test.json") {
+    let count = 0;
+    const timer = setInterval(() => {
+      count++;
+      if (count > 10) {
+        clearInterval(timer);
+        res.end();
+      } else {
+        res.write('{"count":' + count + "}");
+      }
+    }, 1000);
+    return;
+  }
+});
 ```
