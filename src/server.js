@@ -60,3 +60,29 @@ server.listen(PORT, (err) => {
 
   child_process.exec(`open https://localhost:${PORT}`);
 });
+
+var http = require("http");
+
+http
+  .createServer(function (req, res) {
+    res.writeHead(200, {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Headers":
+        "Origin, X-Requested-With, Content-Type, Accept",
+    });
+    const reqPath = req.url === "/" ? "/index.html" : req.url;
+    if (reqPath == "/test.json") {
+      let count = 0;
+      const timer = setInterval(() => {
+        count++;
+        if (count > 10) {
+          clearInterval(timer);
+          res.end();
+        } else {
+          res.write('{"count":' + count + "}");
+        }
+      }, 1000);
+      return;
+    }
+  })
+  .listen(8082);

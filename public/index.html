@@ -3,10 +3,11 @@
     <meta charset="UTF-8" />
   </head>
   <body>
-    <h1>体验一把HTTP2</h1>
+    <h1>http2 stream</h1>
+    <div id="http2"></div>
+    <h1>http1.1 stream</h1>
+    <div id="http1"></div>
   </body>
-  <script src="bundle1.js"></script>
-  <script src="bundle2.js"></script>
   <script>
     // for (var i = 0; i < 100; i++) {
     //   fetch("//localhost:8081/network.png");
@@ -20,7 +21,7 @@
     //     console.log(json);
     //   });
 
-    fetch("//localhost:8081/test.json").then((response) => {
+    fetch("https://localhost:8081/test.json").then((response) => {
       const reader = response.body.getReader();
       const stream = new ReadableStream({
         start(controller) {
@@ -38,7 +39,35 @@
               // Check chunks by logging to the console
               const text = new TextDecoder("utf-8").decode(value);
               const ele = document.createElement("div");
-              document.body.appendChild(ele);
+              document.getElementById("http2").appendChild(ele);
+              ele.innerHTML = text;
+              push();
+            });
+          }
+
+          push();
+        },
+      });
+    });
+    fetch("http://localhost:8082/test.json").then((response) => {
+      const reader = response.body.getReader();
+      const stream = new ReadableStream({
+        start(controller) {
+          function push() {
+            // "done" is a Boolean and value a "Uint8Array"
+            reader.read().then(({ done, value }) => {
+              // If there is no more data to read
+              if (done) {
+                console.log("done", done);
+                controller.close();
+                return;
+              }
+              // Get the data and send it to the browser via the controller
+              controller.enqueue(value);
+              // Check chunks by logging to the console
+              const text = new TextDecoder("utf-8").decode(value);
+              const ele = document.createElement("div");
+              document.getElementById("http1").appendChild(ele);
               ele.innerHTML = text;
               push();
             });
