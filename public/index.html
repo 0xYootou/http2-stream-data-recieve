@@ -1,15 +1,52 @@
 <html>
-<head>
-  <meta charset="UTF-8">
-</head>
-<body>
-  <h1>体验一把HTTP2</h1>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <h1>体验一把HTTP2</h1>
+  </body>
   <script src="bundle1.js"></script>
   <script src="bundle2.js"></script>
-<script>
-        for(var i=0;i<100;i++) {
-            fetch('//localhost:8080/network.png');
-        }
-</script>
+  <script>
+    // for (var i = 0; i < 100; i++) {
+    //   fetch("//localhost:8081/network.png");
+    // }
+
+    // fetch("//localhost:8081/test.json")
+    //   .then(function (response) {
+    //     return response.text();
+    //   })
+    //   .then(function (json) {
+    //     console.log(json);
+    //   });
+
+    fetch("//localhost:8081/test.json").then((response) => {
+      const reader = response.body.getReader();
+      const stream = new ReadableStream({
+        start(controller) {
+          function push() {
+            // "done" is a Boolean and value a "Uint8Array"
+            reader.read().then(({ done, value }) => {
+              // If there is no more data to read
+              if (done) {
+                console.log("done", done);
+                controller.close();
+                return;
+              }
+              // Get the data and send it to the browser via the controller
+              controller.enqueue(value);
+              // Check chunks by logging to the console
+              const text = new TextDecoder("utf-8").decode(value);
+              const ele = document.createElement("div");
+              document.body.appendChild(ele);
+              ele.innerHTML = text;
+              push();
+            });
+          }
+
+          push();
+        },
+      });
+    });
+  </script>
 </html>

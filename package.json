@@ -4,7 +4,7 @@
   "description": "",
   "main": "",
   "scripts": {
-    "start": "node --expose-http2 index.js"
+    "start": " node index.js --expose-http2"
   },
   "author": "",
   "license": "MIT",
